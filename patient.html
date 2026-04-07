@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>AegisAI — Patient</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  :root{
+    --green:#1B8F5E;
+    --green2:#24B87A;
+    --green-lt:#E6F7F1;
+    --blue:#2563EB;
+    --blue-lt:#EFF6FF;
+    --amber:#F59E0B;
+    --amber-lt:#FFFBEB;
+    --red:#DC2626;
+    --red-lt:#FEF2F2;
+    --gray0:#FAFAFA;
+    --gray1:#F3F4F6;
+    --gray2:#E5E7EB;
+    --gray3:#9CA3AF;
+    --gray4:#4B5563;
+    --gray5:#111827;
+    --white:#FFFFFF;
+    --radius:18px;
+    --radius-sm:12px;
+  }
+
+  html,body{
+    height:100%;
+    background:#F0FBF5;
+    font-family:'Baloo 2',sans-serif;
+    color:var(--gray5);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* ── PHONE SHELL ── */
+  .shell{
+    max-width:420px;
+    min-height:100vh;
+    margin:0 auto;
+    background:var(--white);
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 0 60px rgba(0,0,0,.12);
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ── SCREEN SYSTEM ── */
+  .screen{
+    display:none;
+    flex-direction:column;
+    min-height:100vh;
+    flex:1;
+    animation:fadeIn .28s ease;
+  }
+  .screen.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── STATUS BAR ── */
+  .sbar{
+    background:var(--green);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px 10px;
+    font-size:11px;
+    font-weight:600;
+    flex-shrink:0;
+  }
+  .sbar-logo{font-size:15px;font-weight:800;letter-spacing:-.3px;}
+
+  /* ── TOP HEADER ── */
+  .header{
+    background:var(--green);
+    padding:0 18px 22px;
+    flex-shrink:0;
+  }
+  .header.round{border-radius:0 0 28px 28px;}
+  .hback{
+    display:flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.18);
+    border:none;border-radius:24px;
+    padding:7px 14px 7px 10px;
+    color:#fff;font-size:13px;font-weight:600;
+    cursor:pointer;font-family:inherit;
+    margin-bottom:14px;
+  }
+  .htitle{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+  .hsub{font-size:13px;color:rgba(255,255,255,.78);margin-top:4px;font-weight:500;}
+
+  /* ── BODY SCROLL ── */
+  .sbody{flex:1;overflow-y:auto;padding:20px 18px 100px;-webkit-overflow-scrolling:touch;}
+  .sbody::-webkit-scrollbar{display:none;}
+
+  /* ── BOTTOM BAR ── */
+  .bbar{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+    width:100%;max-width:420px;
+    background:#fff;border-top:2px solid var(--gray2);
+    display:flex;align-items:center;justify-content:space-around;
+    padding:8px 0 16px;z-index:100;
+    flex-shrink:0;
+  }
+  .bbar-item{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    font-size:10px;font-weight:600;color:var(--gray3);cursor:pointer;
+    padding:4px 16px;border-radius:12px;transition:all .15s;
+  }
+  .bbar-item.act{color:var(--green);}
+  .bbar-icon{font-size:22px;line-height:1;}
+
+  /* ── CARDS ── */
+  .card{
+    background:#fff;border-radius:var(--radius);
+    border:2px solid var(--gray2);
+    padding:16px;margin-bottom:14px;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .card:active{box-shadow:0 4px 20px rgba(0,0,0,.08);}
+  .card.sel{border-color:var(--green);background:var(--green-lt);}
+  .card.clickable{cursor:pointer;}
+
+  /* ── STEP INDICATOR ── */
+  .steps{
+    display:flex;align-items:center;justify-content:center;
+    gap:0;padding:14px 18px;background:#fff;
+    border-bottom:1px solid var(--gray2);
+    flex-shrink:0;
+  }
+  .step-dot{
+    width:28px;height:28px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;
+    background:var(--gray2);color:var(--gray3);
+    flex-shrink:0;transition:all .3s;
+  }
+  .step-dot.done{background:var(--green);color:#fff;}
+  .step-dot.cur{background:var(--green);color:#fff;box-shadow:0 0 0 4px rgba(27,143,94,.2);}
+  .step-line{flex:1;height:3px;background:var(--gray2);margin:0 4px;max-width:40px;border-radius:3px;transition:background .3s;}
+  .step-line.done{background:var(--green);}
+
+  /* ── BIG BUTTONS ── */
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;padding:16px;border-radius:var(--radius);
+    font-size:16px;font-weight:700;cursor:pointer;
+    border:none;font-family:inherit;transition:all .15s;
+    letter-spacing:-.1px;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn-green{background:var(--green);color:#fff;}
+  .btn-green:hover{background:var(--green2);}
+  .btn-outline{background:#fff;color:var(--green);border:2px solid var(--green);}
+  .btn-gray{background:var(--gray1);color:var(--gray4);border:2px solid var(--gray2);}
+  .btn-blue{background:var(--blue);color:#fff;}
+  .btn-sm{padding:11px;font-size:14px;border-radius:var(--radius-sm);}
+
+  /* ── INPUT ── */
+  .inp-lbl{font-size:13px;font-weight:700;color:var(--gray4);margin-bottom:6px;}
+  .inp{
+    width:100%;padding:14px 16px;border-radius:var(--radius-sm);
+    border:2px solid var(--gray2);background:#fff;
+    font-size:15px;font-family:inherit;color:var(--gray5);
+    outline:none;transition:border-color .15s;
+  }
+  .inp:focus{border-color:var(--green);}
+  .inp-group{margin-bottom:16px;}
+
+  /* ── MIC BUTTON ── */
+  .mic-btn{
+    background:var(--green-lt);border:3px dashed var(--green);
+    border-radius:var(--radius);padding:22px;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    cursor:pointer;transition:all .2s;margin-bottom:16px;
+    font-family:inherit;width:100%;
+  }
+  .mic-btn.on{background:#FFF0F0;border-color:var(--red);animation:pulse-mic 1s infinite;}
+  .mic-icon{font-size:48px;line-height:1;}
+  .mic-txt{font-size:15px;font-weight:700;color:var(--green);}
+  .mic-btn.on .mic-txt{color:var(--red);}
+  .mic-sub{font-size:12px;color:var(--gray3);font-weight:500;}
+  @keyframes pulse-mic{
+    0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.3);}
+    50%{box-shadow:0 0 0 10px rgba(220,38,38,.0);}
+  }
+
+  /* ── LANG PILLS ── */
+  .lang-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .lang-pill{
+    padding:8px 16px;border-radius:24px;
+    border:2px solid var(--gray2);background:#fff;
+    font-size:13px;font-weight:600;cursor:pointer;
+    font-family:inherit;color:var(--gray4);transition:all .15s;
+  }
+  .lang-pill.sel{border-color:var(--green);background:var(--green-lt);color:var(--green);}
+
+  /* ── TRANSCRIPT BOX ── */
+  .transcript{
+    background:var(--gray1);border-radius:var(--radius-sm);
+    padding:14px;min-height:80px;font-size:14px;
+    color:var(--gray5);line-height:1.6;border:2px solid var(--gray2);
+    margin-bottom:14px;
+  }
+  .transcript.filled{border-color:var(--green);background:var(--green-lt);}
+
+  /* ── HOSPITAL CARD ── */
+  .hosp-card{
+    display:flex;align-items:center;gap:14px;
+    background:#fff;border-radius:var(--radius);
+    border:2px solid var(--gray2);padding:14px 16px;
+    margin-bottom:12px;cursor:pointer;transition:all .15s;
+  }
+  .hosp-card:active{border-color:var(--green);}
+  .hosp-card.sel{border-color:var(--green);background:var(--green-lt);}
+  .hosp-icon{font-size:32px;flex-shrink:0;}
+  .hosp-name{font-size:15px;font-weight:700;color:var(--gray5);}
+  .hosp-dist{font-size:12px;color:var(--gray3);margin-top:2px;font-weight:500;}
+  .hosp-avail{font-size:12px;font-weight:600;color:var(--green);margin-top:2px;}
+  .hosp-right{margin-left:auto;flex-shrink:0;}
+
+  /* ── BADGE ── */
+  .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+  .badge-green{background:var(--green-lt);color:var(--green);}
+  .badge-amber{background:var(--amber-lt);color:var(--amber);}
+  .badge-red{background:var(--red-lt);color:var(--red);}
+  .badge-blue{background:var(--blue-lt);color:var(--blue);}
+
+  /* ── TYPE CARD ── */
+  .type-card{
+    border:3px solid var(--gray2);border-radius:var(--radius);
+    padding:22px 16px;text-align:center;cursor:pointer;
+    transition:all .2s;background:#fff;
+  }
+  .type-card:active{transform:scale(.97);}
+  .type-card.sel{border-color:var(--green);background:var(--green-lt);}
+  .type-icon{font-size:44px;margin-bottom:10px;line-height:1;}
+  .type-name{font-size:18px;font-weight:800;color:var(--gray5);}
+  .type-desc{font-size:12px;color:var(--gray3);margin-top:4px;font-weight:500;line-height:1.5;}
+
+  /* ── SLOT CARD ── */
+  .slot-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
+  .slot{
+    padding:12px 8px;border-radius:var(--radius-sm);
+    border:2px solid var(--gray2);background:#fff;
+    text-align:center;cursor:pointer;transition:all .15s;
+    font-family:inherit;
+  }
+  .slot.sel{border-color:var(--green);background:var(--green-lt);}
+  .slot.busy{background:var(--gray1);color:var(--gray3);cursor:not-allowed;}
+  .slot-time{font-size:13px;font-weight:700;color:var(--gray5);}
+  .slot.busy .slot-time{color:var(--gray3);}
+  .slot-spots{font-size:10px;color:var(--gray3);margin-top:2px;font-weight:600;}
+  .slot.sel .slot-spots{color:var(--green);}
+
+  /* ── CONFIRMATION POPUP ── */
+  .popup-bg{
+    position:fixed;inset:0;background:rgba(0,0,0,.55);
+    display:none;z-index:200;align-items:flex-end;justify-content:center;
+  }
+  .popup-bg.on{display:flex;animation:popfade .25s ease;}
+  @keyframes popfade{from{opacity:0}to{opacity:1}}
+  .popup{
+    background:#fff;border-radius:28px 28px 0 0;
+    padding:28px 22px 36px;width:100%;max-width:420px;
+    animation:popslide .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popslide{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .popup-check{
+    width:72px;height:72px;border-radius:50%;
+    background:var(--green-lt);border:3px solid var(--green);
+    display:flex;align-items:center;justify-content:center;
+    font-size:36px;margin:0 auto 16px;
+  }
+  .popup-title{font-size:22px;font-weight:800;text-align:center;color:var(--gray5);margin-bottom:6px;}
+  .popup-sub{font-size:14px;color:var(--gray3);text-align:center;margin-bottom:22px;font-weight:500;line-height:1.5;}
+  .conf-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--gray2);}
+  .conf-row:last-of-type{border-bottom:none;}
+  .conf-key{font-size:13px;color:var(--gray3);font-weight:600;}
+  .conf-val{font-size:14px;font-weight:700;color:var(--gray5);}
+  .conf-val.green{color:var(--green);}
+  .notif-row{display:flex;gap:10px;margin-top:16px;margin-bottom:18px;}
+  .notif-chip{
+    flex:1;padding:10px;border-radius:var(--radius-sm);
+    background:var(--gray1);border:2px solid var(--gray2);
+    text-align:center;font-size:13px;font-weight:700;cursor:pointer;
+    transition:all .15s;font-family:inherit;
+  }
+  .notif-chip.sel{border-color:var(--green);background:var(--green-lt);color:var(--green);}
+
+  /* ── PAYMENT CARD ── */
+  .pay-mode{
+    display:flex;align-items:center;gap:14px;
+    background:#fff;border-radius:var(--radius-sm);
+    border:2px solid var(--gray2);padding:14px;
+    margin-bottom:10px;cursor:pointer;transition:all .15s;
+  }
+  .pay-mode.sel{border-color:var(--green);background:var(--green-lt);}
+  .pay-icon{font-size:28px;flex-shrink:0;}
+  .pay-name{font-size:15px;font-weight:700;}
+  .pay-desc{font-size:12px;color:var(--gray3);font-weight:500;}
+  .pay-check{margin-left:auto;font-size:22px;opacity:0;transition:opacity .15s;}
+  .pay-mode.sel .pay-check{opacity:1;}
+
+  /* ── WAVING ANIMATION ── */
+  .wave-anim{display:flex;gap:5px;align-items:center;justify-content:center;height:32px;}
+  .wave-bar{width:4px;background:var(--red);border-radius:3px;animation:wave 1s ease-in-out infinite;}
+  .wave-bar:nth-child(1){animation-delay:0s;height:12px;}
+  .wave-bar:nth-child(2){animation-delay:.15s;height:22px;}
+  .wave-bar:nth-child(3){animation-delay:.3s;height:30px;}
+  .wave-bar:nth-child(4){animation-delay:.45s;height:22px;}
+  .wave-bar:nth-child(5){animation-delay:.6s;height:12px;}
+  @keyframes wave{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
+
+  /* ── INFO CHIP ── */
+  .info-chip{
+    background:var(--amber-lt);border:1.5px solid var(--amber);
+    border-radius:var(--radius-sm);padding:12px 14px;
+    font-size:13px;font-weight:600;color:#92400E;
+    display:flex;align-items:flex-start;gap:8px;margin-bottom:14px;
+    line-height:1.5;
+  }
+
+  /* ── DIVIDER ── */
+  .divider{height:1px;background:var(--gray2);margin:16px 0;}
+
+  /* ── SECTION TITLE ── */
+  .sec-title{font-size:12px;font-weight:700;color:var(--gray3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+
+  /* ── TOAST ── */
+  .toast{
+    position:fixed;top:20px;left:50%;transform:translateX(-50%);
+    background:var(--gray5);color:#fff;padding:12px 22px;
+    border-radius:24px;font-size:13px;font-weight:600;
+    z-index:999;display:none;white-space:nowrap;
+    animation:toastin .3s ease;
+  }
+  .toast.on{display:block;}
+  @keyframes toastin{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+  /* ── HOME SCREEN SPECIFIC ── */
+  .hero-greet{font-size:13px;color:rgba(255,255,255,.75);font-weight:500;}
+  .hero-name{font-size:24px;font-weight:800;color:#fff;margin-top:2px;}
+  .hero-card{
+    background:#fff;border-radius:20px;padding:18px;
+    margin:0 18px;margin-top:-20px;
+    box-shadow:0 8px 30px rgba(0,0,0,.1);
+    border:2px solid var(--gray2);
+  }
+  .quick-action{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    cursor:pointer;flex:1;
+  }
+  .qa-icon{
+    width:56px;height:56px;border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;
+  }
+  .qa-lbl{font-size:12px;font-weight:700;color:var(--gray4);text-align:center;line-height:1.3;}
+
+  /* ── DOCTOR CARD ── */
+  .doc-card{
+    display:flex;align-items:center;gap:12px;
+    background:#fff;border-radius:var(--radius);
+    border:2px solid var(--gray2);padding:14px;
+    margin-bottom:10px;
+  }
+  .doc-av{
+    width:50px;height:50px;border-radius:16px;
+    background:var(--green-lt);display:flex;align-items:center;justify-content:center;
+    font-size:22px;flex-shrink:0;
+  }
+  .doc-name{font-size:15px;font-weight:700;}
+  .doc-spec{font-size:12px;color:var(--gray3);font-weight:500;}
+  .doc-wait{font-size:12px;color:var(--amber);font-weight:600;margin-top:3px;}
+
+  /* ── NOTIF SCREEN ── */
+  .notif-item{
+    display:flex;gap:12px;padding:14px 0;
+    border-bottom:1px solid var(--gray2);
+  }
+  .notif-ic{
+    width:42px;height:42px;border-radius:14px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;flex-shrink:0;
+  }
+
+  @media(min-width:421px){
+    body{background:#E8F5EE;padding:24px 0;}
+    .bbar{border-radius:0 0 18px 18px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<!-- ═══════════ SCREEN 1: LOGIN ═══════════ -->
+<div class="screen active" id="s-login">
+  <div class="sbar">
+    <span class="sbar-logo">🏥 AegisAI</span>
+    <span>🔒 Secure</span>
+  </div>
+  <div style="background:var(--green);padding:28px 22px 70px;border-radius:0 0 36px 36px;">
+    <div style="font-size:28px;font-weight:800;color:#fff;line-height:1.2;">नमस्ते! 👋<br>Welcome</div>
+    <div style="font-size:14px;color:rgba(255,255,255,.75);margin-top:6px;font-weight:500;">Your health, our priority</div>
+  </div>
+
+  <div style="margin-top:-36px;padding:0 18px 16px;">
+    <div class="card" style="border-width:2px;padding:22px;">
+      <div style="font-size:18px;font-weight:800;margin-bottom:18px;color:var(--gray5);">Login / Sign Up</div>
+
+      <div class="inp-group">
+        <div class="inp-lbl">📱 Mobile Number</div>
+        <input class="inp" type="tel" placeholder="Enter 10-digit number" maxlength="10" id="mob-inp"/>
+      </div>
+
+      <div class="lang-row" style="margin-top:4px;margin-bottom:18px;">
+        <div class="sec-title" style="width:100%;margin-bottom:8px;">🌐 Choose Language / भाषा चुनें</div>
+        <button class="lang-pill sel" onclick="selLang(this)">English</button>
+        <button class="lang-pill" onclick="selLang(this)">हिंदी</button>
+        <button class="lang-pill" onclick="selLang(this)">मराठी</button>
+        <button class="lang-pill" onclick="selLang(this)">தமிழ்</button>
+        <button class="lang-pill" onclick="selLang(this)">বাংলা</button>
+        <button class="lang-pill" onclick="selLang(this)">తెలుగు</button>
+      </div>
+
+      <button class="btn btn-green" onclick="goTo('s-otp')">
+        📲 Send OTP
+      </button>
+
+      <div style="font-size:12px;color:var(--gray3);text-align:center;margin-top:12px;font-weight:500;">
+        OTP will be sent to your WhatsApp &amp; SMS
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN 1B: OTP ═══════════ -->
+<div class="screen" id="s-otp">
+  <div class="sbar">
+    <span class="sbar-logo">🏥 AegisAI</span>
+    <span>Step 1 of 5</span>
+  </div>
+  <div class="header round">
+    <button class="hback" onclick="goTo('s-login')">← Back</button>
+    <div class="htitle">Enter OTP</div>
+    <div class="hsub">Sent to +91 98765-43210 via WhatsApp</div>
+  </div>
+
+  <div class="sbody" style="padding-top:24px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:48px;margin-bottom:8px;">📩</div>
+      <div style="font-size:15px;font-weight:600;color:var(--gray4);">Check your WhatsApp for OTP</div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;margin-bottom:24px;">
+      <input style="width:54px;height:60px;border-radius:14px;border:3px solid var(--gray2);text-align:center;font-size:24px;font-weight:800;font-family:inherit;outline:none;" maxlength="1" id="o1" oninput="nextOtp(this,'o2')"/>
+      <input style="width:54px;height:60px;border-radius:14px;border:3px solid var(--gray2);text-align:center;font-size:24px;font-weight:800;font-family:inherit;outline:none;" maxlength="1" id="o2" oninput="nextOtp(this,'o3')"/>
+      <input style="width:54px;height:60px;border-radius:14px;border:3px solid var(--gray2);text-align:center;font-size:24px;font-weight:800;font-family:inherit;outline:none;" maxlength="1" id="o3" oninput="nextOtp(this,'o4')"/>
+      <input style="width:54px;height:60px;border-radius:14px;border:3px solid var(--gray2);text-align:center;font-size:24px;font-weight:800;font-family:inherit;outline:none;" maxlength="1" id="o4" oninput="otpDone()"/>
+    </div>
+
+    <button class="btn btn-green" onclick="goTo('s-hospital')">✅ Verify OTP</button>
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--gray3);font-weight:500;">
+      Didn't receive? <span style="color:var(--green);font-weight:700;cursor:pointer;">Resend in 30s</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN 2: CHOOSE HOSPITAL ═══════════ -->
+<div class="screen" id="s-hospital">
+  <div class="sbar">
+    <span class="sbar-logo">🏥 AegisAI</span>
+    <span>Step 2 of 5</span>
+  </div>
+  <div class="header round">
+    <div class="htitle">Choose Hospital</div>
+    <div class="hsub">📍 Hospitals near Pimpri, Pune</div>
+  </div>
+
+  <div style="padding:14px 18px 0;">
+    <div class="steps">
+      <div class="step-dot done">✓</div>
+      <div class="step-line done"></div>
+      <div class="step-dot cur">2</div>
+      <div class="step-line"></div>
+      <div class="step-dot">3</div>
+      <div class="step-line"></div>
+      <div class="step-dot">4</div>
+      <div class="step-line"></div>
+      <div class="step-dot">5</div>
+    </div>
+  </div>
+
+  <div class="sbody">
+    <div class="inp-group">
+      <input class="inp" placeholder="🔍 Search hospital or area…"/>
+    </div>
+
+    <div class="sec-title">📍 Nearby (4 hospitals)</div>
+
+    <div class="hosp-card sel" id="hc1" onclick="selHosp(this)">
+      <div class="hosp-icon">🏥</div>
+      <div>
+        <div class="hosp-name">Yashwantrao Chavan Hospital</div>
+        <div class="hosp-dist">0.8 km · Pimpri-Chinchwad</div>
+        <div class="hosp-avail">✅ Doctors available now</div>
+      </div>
+      <div class="hosp-right">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;" id="hc1-check">✓</div>
+      </div>
+    </div>
+
+    <div class="hosp-card" id="hc2" onclick="selHosp(this)">
+      <div class="hosp-icon">🏥</div>
+      <div>
+        <div class="hosp-name">Aditya Birla Memorial Hospital</div>
+        <div class="hosp-dist">2.1 km · Chinchwad</div>
+        <div class="hosp-avail">✅ Open · OPD till 8PM</div>
+      </div>
+      <div class="hosp-right">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--gray2);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--gray3);" id="hc2-check">○</div>
+      </div>
+    </div>
+
+    <div class="hosp-card" id="hc3" onclick="selHosp(this)">
+      <div class="hosp-icon">🏥</div>
+      <div>
+        <div class="hosp-name">Civil Hospital Pune</div>
+        <div class="hosp-dist">5.4 km · Pune</div>
+        <div class="hosp-avail" style="color:var(--amber);">⏳ High demand today</div>
+      </div>
+      <div class="hosp-right">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--gray2);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--gray3);" id="hc3-check">○</div>
+      </div>
+    </div>
+
+    <div class="hosp-card" id="hc4" onclick="selHosp(this)">
+      <div class="hosp-icon">🏥</div>
+      <div>
+        <div class="hosp-name">Sahyadri Hospital</div>
+        <div class="hosp-dist">3.7 km · Wakad</div>
+        <div class="hosp-avail">✅ Available · Specialists</div>
+      </div>
+      <div class="hosp-right">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--gray2);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--gray3);" id="hc4-check">○</div>
+      </div>
+    </div>
+
+    <button class="btn btn-green" style="margin-top:8px;" onclick="goTo('s-details')">
+      Continue →
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN 3: RAISE REQUEST (Speech) ═══════════ -->
+<div class="screen" id="s-details">
+  <div class="sbar">
+    <span class="sbar-logo">🏥 AegisAI</span>
+    <span>Step 3 of 5</span>
+  </div>
+  <div class="header round">
+    <button class="hback" onclick="goTo('s-hospital')">← Back</button>
+    <div class="htitle">Tell Us Your Problem</div>
+    <div class="hsub">Speak or type — we understand your language</div>
+  </div>
+
+  <div style="padding:10px 18px 0;">
+    <div class="steps">
+      <div class="step-dot done">✓</div>
+      <div class="step-line done"></div>
+      <div class="step-dot done">✓</div>
+      <div class="step-line done"></div>
+      <div class="step-dot cur">3</div>
+      <div class="step-line"></div>
+      <div class="step-dot">4</div>
+      <div class="step-line"></div>
+      <div class="step-dot">5</div>
+    </div>
+  </div>
+
+  <div class="sbody">
+    <div class="sec-title">🎤 Speak in your language</div>
+
+    <button class="mic-btn" id="mic-btn" onclick="toggleMic()">
+      <div class="mic-icon" id="mic-icon">🎤</div>
+      <div id="mic-wave" style="display:none;">
+        <div class="wave-anim">
+          <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+          <div class="wave-bar"></div><div class="wave-bar"></div>
+        </div>
+      </div>
+      <div class="mic-txt" id="mic-txt">Tap to Speak / बोलने के लिए दबाएं</div>
+      <div class="mic-sub" id="mic-sub">मराठी, हिंदी, English सभी भाषाएं</div>
+    </button>
+
+    <div id="transcript" class="transcript">
+      <span style="color:var(--gray3);">Your words will appear here…<br>आपके शब्द यहाँ दिखेंगे…</span>
+    </div>
+
+    <div class="divider"></div>
+    <div class="sec-title">✏️ OR type your problem</div>
+
+    <div class="inp-group">
+      <textarea class="inp" rows="3" id="prob-text" placeholder="Example: मुझे 3 दिन से बुखार है, सिर दर्द भी है…&#10;My stomach has been hurting since yesterday…"></textarea>
+    </div>
+
+    <div class="sec-title">👤 Patient Details</div>
+    <div class="inp-group">
+      <div class="inp-lbl">Patient Name</div>
+      <input class="inp" placeholder="Enter full name" value="Rahul Kulkarni"/>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div class="inp-group" style="margin:0;">
+        <div class="inp-lbl">Age</div>
+        <input class="inp" placeholder="Age" value="32"/>
+      </div>
+      <div class="inp-group" style="margin:0;">
+        <div class="inp-lbl">Gender</div>
+        <select class="inp" style="appearance:auto;">
+          <option>Male</option><option>Female</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="info-chip">
+      ⚠️ <span>If it is an <strong>emergency</strong>, please call <strong>108</strong> immediately or go to Emergency directly.</span>
+    </div>
+
+    <button class="btn btn-green" onclick="goTo('s-opd')">Next →</button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN 4: OPD / IPD ═══════════ -->
+<div class="screen" id="s-opd">
+  <div class="sbar">
+    <span class="sbar-logo">🏥 AegisAI</span>
+    <span>Step 4 of 5</span>
+  </div>
+  <div class="header round">
+    <button class="hback" onclick="goTo('s-details')">← Back</button>
+    <div class="htitle">Select Visit Type</div>
+    <div class="hsub">Based on your symptoms, AI suggests OPD</div>
+  </div>
+
+  <div style="padding:10px 18px 0;">
+    <div class="steps">
+      <div class="step-dot done">✓</div>
+      <div class="step-line done"></div>
+      <div class="step-dot done">✓</div>
+      <div class="step-line done"></div>
+      <div class="step-dot done">✓</div>
+      <div class="step-line done"></div>
+      <div class="step-dot cur">4</div>
+      <div class="step-line"></div>
+      <div class="step-dot">5</div>
+    </div>
+  </div>
+
+  <div class="sbody">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+      <div class="type-card sel" id="tc-opd" onclick="selType('opd')">
+        <div class="type-icon">🏃</div>
+        <div class="type-name">OPD</div>
+        <div class="type-desc">Outpatient<br>Visit &amp; Go Home</div>
+        <div style="margin-top:8px;"><span class="badge badge-green">✅ Recommended</span></div>
+      </div>
+      <div class="type-card" id="tc-ipd" onclick="selType('ipd')">
+        <div class="type-icon">🛏️</div>
+        <div class="type-name">IPD</div>
+        <div class="type-desc">Inpatient<br>Stay in Hospital</div>
+        <div style="margin-top:8px;"><span class="badge badge-amber">For serious cases</span></div>
+      </div>
+    </div>
+
+    <div class="sec-title">👨‍⚕️ Available Doctors Today</div>
+
+    <div class="doc-card" id="dc1" onclick="selDoc(this)" style="cursor:pointer;border-color:var(--green);background:var(--green-lt);">
+      <div class="doc-av">👨‍⚕️</div>
+      <div>
+        <div class="doc-name">Dr. Priya Sharma</div>
+        <div class="doc-spec">General Physician</div>
+        <div class="doc-wait">⏱ Wait: ~15 min</div>
+      </div>
+      <div style="margin-left:auto;font-size:22px;">✅</div>
+    </div>
+
+    <div class="doc-card" id="dc2" onclick="selDoc(this)" style="cursor:pointer;">
+      <div class="doc-av">👩‍⚕️</div>
+      <div>
+        <div class="doc-name">Dr. Arun Desai</div>
+        <div class="doc-spec">Internal Medicine</div>
+        <div class="doc-wait">⏱ Wait: ~35 min</div>
+      </div>
+      <div style="margin-left:auto;font-size:22px;opacity:.3;">○</div>
+    </div>
+
+    <div class="doc-card" style="border-color:var(--red-lt);">
+      <div class="doc-av" style="background:var(--red-lt);">👨‍⚕️</div>
+      <div>
+        <div class="doc-name">Dr. Meena Joshi</div>
+        <div class="doc-spec">ENT Specialist</div>
+        <div class="doc-wait" style="color:var(--gray3);">Not available today</div>
+      </div>
+      <div style="margin-left:auto;"><span class="badge badge-red">Off</span></div>
+    </div>
+
+    <button class="btn btn-green" onclick="goTo('s-payment')">Next →</button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN 5: PAYMENT ═══════════ -->
+<div class="screen" id="s-payment">
+  <div class="sbar">
+    <span class="sbar-logo">🏥 AegisAI</span>
+    <span>Step 5 of 5</span>
+  </div>
+  <div class="header round">
+    <button class="hback" onclick="goTo('s-opd')">← Back</button>
+    <div class="htitle">Payment</div>
+    <div class="hsub">OPD Registration Fees</div>
+  </div>
+
+  <div style="padding:10px 18px 0;">
+    <div class="steps">
+      <div class="step-dot done">✓</div>
+      <div class="step-line done"></div>
+      <div class="step-dot done">✓</div>
+      <div class="step-line done"></div>
+      <div class="step-dot done">✓</div>
+      <div class="step-line done"></div>
+      <div class="step-dot done">✓</div>
+      <div class="step-line done"></div>
+      <div class="step-dot cur">5</div>
+    </div>
+  </div>
+
+  <div class="sbody">
+    <div class="card" style="border-left:4px solid var(--green);">
+      <div class="sec-title">💰 Fee Summary</div>
+      <div class="conf-row"><span class="conf-key">OPD Registration</span><span class="conf-val">₹ 100</span></div>
+      <div class="conf-row"><span class="conf-key">Doctor Consultation</span><span class="conf-val">₹ 200</span></div>
+      <div class="conf-row"><span class="conf-key">GST (0%)</span><span class="conf-val">₹ 0</span></div>
+      <div class="conf-row" style="border-bottom:none;">
+        <span style="font-size:15px;font-weight:800;color:var(--gray5);">Total</span>
+        <span style="font-size:18px;font-weight:800;color:var(--green);">₹ 300</span>
+      </div>
+    </div>
+
+    <div class="info-chip">
+      🏛️ <span>PM-JAY / Ayushman Bharat patients: Show your card at counter for <strong>FREE</strong> treatment.</span>
+    </div>
+
+    <div class="sec-title">💳 Choose Payment Method</div>
+
+    <div class="pay-mode sel" id="pm1" onclick="selPay(this)">
+      <div class="pay-icon">📱</div>
+      <div><div class="pay-name">UPI / PhonePe / GPay</div><div class="pay-desc">Instant · Most popular</div></div>
+      <div class="pay-check">✅</div>
+    </div>
+
+    <div class="pay-mode" id="pm2" onclick="selPay(this)">
+      <div class="pay-icon">💵</div>
+      <div><div class="pay-name">Cash at Counter</div><div class="pay-desc">Pay at hospital desk</div></div>
+      <div class="pay-check">✅</div>
+    </div>
+
+    <div class="pay-mode" id="pm3" onclick="selPay(this)">
+      <div class="pay-icon">💳</div>
+      <div><div class="pay-name">Debit / Credit Card</div><div class="pay-desc">Visa, Mastercard, RuPay</div></div>
+      <div class="pay-check">✅</div>
+    </div>
+
+    <div class="pay-mode" id="pm4" onclick="selPay(this)">
+      <div class="pay-icon">🏛️</div>
+      <div><div class="pay-name">Ayushman Bharat / Free</div><div class="pay-desc">Government scheme</div></div>
+      <div class="pay-check">✅</div>
+    </div>
+
+    <button class="btn btn-green" style="margin-top:8px;" onclick="showConfirmPopup()">
+      💳 Pay ₹300 &amp; Book Appointment
+    </button>
+    <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--gray3);font-weight:500;">
+      🔒 Secured by Razorpay · 256-bit encrypted
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: HOME DASHBOARD ═══════════ -->
+<div class="screen" id="s-home">
+  <div style="background:var(--green);padding:14px 18px 80px;border-radius:0 0 36px 36px;">
+    <div class="sbar" style="background:transparent;padding:0 0 14px;">
+      <span class="sbar-logo">🏥 AegisAI</span>
+      <span style="font-size:20px;cursor:pointer;">🔔</span>
+    </div>
+    <div class="hero-greet">Good Morning 🌤️</div>
+    <div class="hero-name">Rahul Kulkarni</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:2px;font-weight:500;">
+      📍 Pimpri, Pune · <span style="cursor:pointer;text-decoration:underline;">Change</span>
+    </div>
+  </div>
+
+  <div style="margin-top:-52px;padding:0 18px 16px;">
+    <div class="hero-card">
+      <div style="font-size:13px;font-weight:700;color:var(--gray4);margin-bottom:14px;">⚡ Quick Actions</div>
+      <div style="display:flex;gap:8px;">
+        <div class="quick-action" onclick="goTo('s-hospital')">
+          <div class="qa-icon" style="background:#E8FFF5;">🩺</div>
+          <div class="qa-lbl">Book<br>Appointment</div>
+        </div>
+        <div class="quick-action" onclick="showToast('Opening prescriptions…')">
+          <div class="qa-icon" style="background:#FFF8E8;">💊</div>
+          <div class="qa-lbl">My<br>Prescription</div>
+        </div>
+        <div class="quick-action" onclick="goTo('s-notif')">
+          <div class="qa-icon" style="background:#EFF6FF;">🔔</div>
+          <div class="qa-lbl">Notifications</div>
+        </div>
+        <div class="quick-action" onclick="showToast('Opening reports…')">
+          <div class="qa-icon" style="background:#FFF0F0;">📋</div>
+          <div class="qa-lbl">My<br>Reports</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:0 18px 100px;">
+    <div class="card" style="border-left:4px solid var(--green);cursor:pointer;" onclick="goTo('s-hospital')">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:36px;">📅</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--gray5);">Next Appointment</div>
+          <div style="font-size:13px;color:var(--green);font-weight:700;margin-top:2px;">Today · 10:30 AM · Token #12</div>
+          <div style="font-size:12px;color:var(--gray3);font-weight:500;">YC Hospital · Dr. Priya Sharma</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--green-lt);border-radius:10px;text-align:center;">
+        <span style="font-size:20px;font-weight:800;color:var(--green);">🎫 Token No: 12</span>
+        <div style="font-size:12px;color:var(--gray3);margin-top:2px;">~15 min wait · 3 people ahead</div>
+      </div>
+    </div>
+
+    <div class="sec-title">📰 Health Tips</div>
+    <div class="card" style="background:linear-gradient(135deg,#E8FFF5,#F0FBF5);">
+      <div style="font-size:20px;margin-bottom:6px;">💧</div>
+      <div style="font-size:14px;font-weight:700;">Stay Hydrated in Summer</div>
+      <div style="font-size:12px;color:var(--gray3);margin-top:4px;line-height:1.5;">Drink at least 8 glasses of water daily. Avoid sugary drinks.</div>
+    </div>
+  </div>
+
+  <div class="bbar">
+    <div class="bbar-item act" onclick="navHome(this,'s-home')"><div class="bbar-icon">🏠</div>Home</div>
+    <div class="bbar-item" onclick="navHome(this,'s-hospital')"><div class="bbar-icon">🏥</div>Book</div>
+    <div class="bbar-item" onclick="showToast('Prescriptions coming soon…')"><div class="bbar-icon">💊</div>Rx</div>
+    <div class="bbar-item" onclick="navHome(this,'s-notif')"><div class="bbar-icon">🔔</div>Alerts</div>
+    <div class="bbar-item" onclick="showToast('Profile coming soon…')"><div class="bbar-icon">👤</div>Profile</div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: NOTIFICATIONS ═══════════ -->
+<div class="screen" id="s-notif">
+  <div class="sbar">
+    <span class="sbar-logo">🏥 AegisAI</span>
+    <span>Notifications</span>
+  </div>
+  <div class="header round">
+    <button class="hback" onclick="goTo('s-home')">← Home</button>
+    <div class="htitle">Your Alerts 🔔</div>
+    <div class="hsub">Via WhatsApp, SMS &amp; Email</div>
+  </div>
+
+  <div class="sbody">
+    <div class="notif-item">
+      <div class="notif-ic" style="background:var(--green-lt);">✅</div>
+      <div>
+        <div style="font-size:14px;font-weight:700;">Appointment Confirmed!</div>
+        <div style="font-size:13px;color:var(--gray4);margin-top:2px;line-height:1.5;">Token #12 · Today 10:30 AM<br>Dr. Priya Sharma · YC Hospital</div>
+        <div style="font-size:11px;color:var(--gray3);margin-top:4px;">📲 Sent via WhatsApp · Just now</div>
+      </div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-ic" style="background:var(--amber-lt);">⏰</div>
+      <div>
+        <div style="font-size:14px;font-weight:700;">Reminder: 2 patients ahead</div>
+        <div style="font-size:13px;color:var(--gray4);margin-top:2px;">Please come to hospital in 10 min</div>
+        <div style="font-size:11px;color:var(--gray3);margin-top:4px;">📱 SMS · 10 min ago</div>
+      </div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-ic" style="background:var(--blue-lt);">💊</div>
+      <div>
+        <div style="font-size:14px;font-weight:700;">Prescription Ready</div>
+        <div style="font-size:13px;color:var(--gray4);margin-top:2px;">Dr. Sharma has sent your prescription. Tap to view.</div>
+        <div style="font-size:11px;color:var(--gray3);margin-top:4px;">📧 Email + WhatsApp · Yesterday</div>
+      </div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-ic" style="background:var(--green-lt);">💳</div>
+      <div>
+        <div style="font-size:14px;font-weight:700;">Payment Successful</div>
+        <div style="font-size:13px;color:var(--gray4);margin-top:2px;">₹300 paid via UPI · Ref: AEG8821</div>
+        <div style="font-size:11px;color:var(--gray3);margin-top:4px;">📲 WhatsApp · Yesterday</div>
+      </div>
+    </div>
+
+    <div class="sec-title" style="margin-top:8px;">📲 Notification Settings</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;">📱 WhatsApp</div>
+          <div style="font-size:12px;color:var(--gray3);">+91 98765-43210</div>
+        </div>
+        <div style="background:var(--green);width:44px;height:24px;border-radius:12px;position:relative;cursor:pointer;">
+          <div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;right:3px;top:3px;"></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;">💬 SMS</div>
+          <div style="font-size:12px;color:var(--gray3);">All Indian numbers</div>
+        </div>
+        <div style="background:var(--green);width:44px;height:24px;border-radius:12px;position:relative;cursor:pointer;">
+          <div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;right:3px;top:3px;"></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:14px;font-weight:700;">📧 Email</div>
+          <div style="font-size:12px;color:var(--gray3);">rahul@email.com</div>
+        </div>
+        <div style="background:var(--gray2);width:44px;height:24px;border-radius:12px;position:relative;cursor:pointer;">
+          <div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;left:3px;top:3px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bbar">
+    <div class="bbar-item" onclick="navHome(this,'s-home')"><div class="bbar-icon">🏠</div>Home</div>
+    <div class="bbar-item" onclick="navHome(this,'s-hospital')"><div class="bbar-icon">🏥</div>Book</div>
+    <div class="bbar-item" onclick="showToast('Prescriptions coming soon…')"><div class="bbar-icon">💊</div>Rx</div>
+    <div class="bbar-item act"><div class="bbar-icon">🔔</div>Alerts</div>
+    <div class="bbar-item" onclick="showToast('Profile coming soon…')"><div class="bbar-icon">👤</div>Profile</div>
+  </div>
+</div>
+
+<!-- ═══════════ CONFIRMATION POPUP ═══════════ -->
+<div class="popup-bg" id="conf-popup">
+  <div class="popup">
+    <div class="popup-check">🎉</div>
+    <div class="popup-title">Appointment Booked!</div>
+    <div class="popup-sub">Your slot is confirmed. Please arrive 10 minutes early.</div>
+
+    <div class="conf-row"><span class="conf-key">Patient</span><span class="conf-val">Rahul Kulkarni</span></div>
+    <div class="conf-row"><span class="conf-key">Hospital</span><span class="conf-val">YC Hospital, Pimpri</span></div>
+    <div class="conf-row"><span class="conf-key">Doctor</span><span class="conf-val">Dr. Priya Sharma</span></div>
+    <div class="conf-row"><span class="conf-key">Date &amp; Time</span><span class="conf-val green">Today · 10:30 AM</span></div>
+    <div class="conf-row"><span class="conf-key">Token Number</span><span class="conf-val green" style="font-size:22px;font-weight:800;">🎫 #12</span></div>
+    <div class="conf-row"><span class="conf-key">Wait (approx)</span><span class="conf-val">~15 minutes</span></div>
+    <div class="conf-row"><span class="conf-key">Amount Paid</span><span class="conf-val">₹ 300 via UPI ✅</span></div>
+
+    <div style="font-size:13px;font-weight:700;color:var(--gray4);margin-top:14px;margin-bottom:8px;">📲 Send confirmation to:</div>
+    <div class="notif-row">
+      <button class="notif-chip sel" id="nc-wa" onclick="toggleNotif(this)">📱 WhatsApp</button>
+      <button class="notif-chip sel" id="nc-sms" onclick="toggleNotif(this)">💬 SMS</button>
+      <button class="notif-chip" id="nc-em" onclick="toggleNotif(this)">📧 Email</button>
+    </div>
+
+    <button class="btn btn-green" onclick="closePopupGoHome()">
+      🏠 Go to Home
+    </button>
+    <button class="btn btn-gray" style="margin-top:10px;" onclick="closePopupGoHome()">
+      📄 Download Slip
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ TOAST ═══════════ -->
+<div class="toast" id="toast-el"></div>
+
+<script>
+// ── NAVIGATION ──
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  var s=document.getElementById(id);
+  if(s){s.classList.add('active');s.scrollTop=0;}
+  // scroll to top of sbody inside new screen
+  var sb=s&&s.querySelector('.sbody');
+  if(sb) sb.scrollTop=0;
+}
+
+function navHome(el,screen){
+  document.querySelectorAll('.bbar-item').forEach(i=>i.classList.remove('act'));
+  el.classList.add('act');
+  goTo(screen);
+}
+
+// ── LANGUAGE ──
+function selLang(el){
+  document.querySelectorAll('.lang-pill').forEach(p=>p.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ── HOSPITAL SELECT ──
+var hosps=['hc1','hc2','hc3','hc4'];
+function selHosp(el){
+  hosps.forEach(function(id){
+    var c=document.getElementById(id);
+    var ch=document.getElementById(id+'-check');
+    c.classList.remove('sel');
+    ch.textContent='○';
+    ch.style.background='var(--gray2)';
+    ch.style.color='var(--gray3)';
+  });
+  el.classList.add('sel');
+  var chk=el.querySelector('[id$="-check"]');
+  chk.textContent='✓';
+  chk.style.background='var(--green)';
+  chk.style.color='#fff';
+}
+
+// ── MIC ──
+var micActive=false;
+var micTimer=null;
+var sampleTranscripts=[
+  'मुझे 3 दिन से बुखार है और बहुत सिर दर्द हो रहा है…',
+  '3 दिवसांपासून ताप आहे, अंग दुखत आहे…',
+  'I have had fever for 3 days with body ache and headache…'
+];
+function toggleMic(){
+  micActive=!micActive;
+  var btn=document.getElementById('mic-btn');
+  var icon=document.getElementById('mic-icon');
+  var wave=document.getElementById('mic-wave');
+  var txt=document.getElementById('mic-txt');
+  var sub=document.getElementById('mic-sub');
+  var trans=document.getElementById('transcript');
+  if(micActive){
+    btn.classList.add('on');
+    icon.style.display='none';
+    wave.style.display='block';
+    txt.textContent='Recording… speak now';
+    sub.textContent='रोकने के लिए फिर दबाएं';
+    trans.innerHTML='<span style="color:var(--gray3);">Listening… 🎙️</span>';
+    micTimer=setTimeout(function(){
+      var t=sampleTranscripts[Math.floor(Math.random()*sampleTranscripts.length)];
+      trans.innerHTML=t;
+      trans.classList.add('filled');
+      toggleMic();
+    },2800);
+  } else {
+    clearTimeout(micTimer);
+    btn.classList.remove('on');
+    icon.style.display='block';
+    wave.style.display='none';
+    txt.textContent='Tap to Speak / बोलने के लिए दबाएं';
+    sub.textContent='मराठी, हिंदी, English सभी भाषाएं';
+  }
+}
+
+// ── OPD/IPD TYPE ──
+function selType(t){
+  document.getElementById('tc-opd').classList.toggle('sel',t==='opd');
+  document.getElementById('tc-ipd').classList.toggle('sel',t==='ipd');
+}
+
+// ── DOC SELECT ──
+function selDoc(el){
+  document.querySelectorAll('.doc-card').forEach(function(d){
+    d.style.borderColor='';d.style.background='';
+    var ic=d.querySelector('div:last-child');
+    if(ic){ic.style.opacity='.3';ic.textContent='○';}
+  });
+  el.style.borderColor='var(--green)';el.style.background='var(--green-lt)';
+  var ic=el.querySelector('div:last-child');
+  if(ic){ic.style.opacity='1';ic.textContent='✅';}
+}
+
+// ── PAYMENT ──
+function selPay(el){
+  document.querySelectorAll('.pay-mode').forEach(function(p){p.classList.remove('sel');});
+  el.classList.add('sel');
+}
+
+// ── POPUP ──
+function showConfirmPopup(){
+  document.getElementById('conf-popup').classList.add('on');
+}
+function closePopupGoHome(){
+  document.getElementById('conf-popup').classList.remove('on');
+  goTo('s-home');
+  showToast('✅ Confirmation sent via WhatsApp & SMS!');
+}
+
+// ── NOTIF CHIPS ──
+function toggleNotif(el){
+  el.classList.toggle('sel');
+}
+
+// ── OTP ──
+function nextOtp(el,nextId){
+  if(el.value.length===1) document.getElementById(nextId).focus();
+}
+function otpDone(){
+  // auto verify after last digit
+}
+
+// ── TOAST ──
+function showToast(msg){
+  var t=document.getElementById('toast-el');
+  t.textContent=msg;
+  t.classList.add('on');
+  setTimeout(function(){t.classList.remove('on');},2500);
+}
+</script>
+</body>
+</html>
