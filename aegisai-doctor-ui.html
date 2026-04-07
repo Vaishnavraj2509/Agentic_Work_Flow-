@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AegisAI — Doctor Interface</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:#0f1117;color:#e8eaf0;}
+:root{
+  --bg0:#0f1117;
+  --bg1:#161b27;
+  --bg2:#1e2535;
+  --bg3:#252d3d;
+  --bdr:#2e3a50;
+  --txt:#e8eaf0;
+  --txt2:#8a95a8;
+  --accent:#7c6fef;
+  --accent2:#00cfab;
+  --red:#e24b4a;
+  --amber:#ef9f27;
+}
+.app{display:flex;height:100vh;overflow:hidden;background:var(--bg0);}
+
+/* ── SIDEBAR ── */
+.sidebar{width:52px;background:var(--bg1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;transition:width .25s ease;flex-shrink:0;overflow:hidden;}
+.sidebar.exp{width:190px;}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:16px 13px 12px;border-bottom:1px solid var(--bdr);cursor:pointer;}
+.sb-dot{width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+.sb-brand{font-size:14px;font-weight:600;color:var(--txt);white-space:nowrap;opacity:0;transition:opacity .2s;}
+.sidebar.exp .sb-brand{opacity:1;}
+.sb-nav{padding:10px 0;flex:1;display:flex;flex-direction:column;gap:2px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-radius:8px;margin:0 6px;color:var(--txt2);transition:background .15s,color .15s;white-space:nowrap;}
+.sb-item:hover{background:var(--bg2);color:var(--txt);}
+.sb-item.active{background:rgba(124,111,239,.15);color:var(--accent);}
+.sb-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.sb-label{font-size:13px;opacity:0;transition:opacity .2s;}
+.sidebar.exp .sb-label{opacity:1;}
+.sb-foot{padding:10px 14px;border-top:1px solid var(--bdr);display:flex;align-items:center;gap:10px;cursor:pointer;color:var(--txt2);}
+.sb-foot:hover{color:var(--txt);}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:var(--bg1);border-bottom:1px solid var(--bdr);gap:12px;flex-shrink:0;}
+.tb-left{display:flex;align-items:center;gap:12px;}
+.av{width:32px;height:32px;border-radius:50%;background:rgba(124,111,239,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);flex-shrink:0;}
+.av.teal{background:rgba(0,207,171,.2);color:var(--accent2);}
+.av.red{background:rgba(226,75,74,.2);color:var(--red);}
+.pat-name{font-size:14px;font-weight:600;color:var(--txt);}
+.pat-sub{font-size:11px;color:var(--txt2);}
+.badge{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500;}
+.badge-warn{background:rgba(239,159,39,.15);color:var(--amber);border:1px solid rgba(239,159,39,.3);}
+.badge-ok{background:rgba(0,207,171,.12);color:var(--accent2);border:1px solid rgba(0,207,171,.25);}
+.badge-urg{background:rgba(226,75,74,.12);color:var(--red);border:1px solid rgba(226,75,74,.25);}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.tb-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg2);color:var(--txt2);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap;}
+.tb-btn:hover{background:var(--bg3);color:var(--txt);}
+.tb-btn.acc{background:rgba(124,111,239,.1);border-color:rgba(124,111,239,.3);color:var(--accent);}
+
+/* body */
+.body{display:flex;flex:1;min-height:0;overflow:hidden;}
+
+/* ── CHAT ── */
+.chat-wrap{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;position:relative;}
+.chat-area{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px;}
+.chat-area::-webkit-scrollbar{width:4px;}
+.chat-area::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px;}
+
+/* voice bar */
+.voice-bar{display:none;align-items:center;gap:8px;padding:6px 18px;background:rgba(226,75,74,.07);border-bottom:1px solid rgba(226,75,74,.15);flex-shrink:0;}
+.voice-bar.on{display:flex;}
+.vdot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1s infinite;}
+.vtxt{font-size:11px;color:var(--red);}
+
+/* messages */
+.msg{display:flex;gap:9px;max-width:90%;}
+.msg.doc{align-self:flex-end;flex-direction:row-reverse;}
+.msg-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;}
+.ai-av{background:rgba(124,111,239,.2);color:var(--accent);}
+.dr-av{background:rgba(0,207,171,.15);color:var(--accent2);}
+.bubble{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.65;color:var(--txt);}
+.msg.ai .bubble{background:var(--bg2);border:1px solid var(--bdr);border-bottom-left-radius:4px;}
+.msg.doc .bubble{background:rgba(124,111,239,.13);border:1px solid rgba(124,111,239,.25);border-bottom-right-radius:4px;}
+.msg-time{font-size:10px;color:var(--txt2);margin-top:3px;}
+.msg.doc .msg-time{text-align:right;}
+
+/* AI card */
+.ai-card{background:var(--bg1);border:1px solid var(--bdr);border-radius:12px;padding:14px 16px;margin-top:4px;max-width:520px;border-left:3px solid var(--accent);}
+.aic-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.aic-title{font-size:12px;font-weight:600;color:var(--accent);}
+.aic-conf{font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(124,111,239,.12);color:var(--accent);border:1px solid rgba(124,111,239,.25);}
+.aic-sec{margin-bottom:10px;}
+.aic-label{font-size:10px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.aic-val{font-size:13px;color:var(--txt);line-height:1.55;}
+.med-row{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);border-radius:8px;margin-bottom:4px;font-size:12px;}
+.med-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.med-name{font-weight:600;color:var(--txt);}
+.med-dose{color:var(--txt2);margin-left:4px;}
+.aic-actions{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;}
+.abtn{padding:6px 13px;border-radius:8px;font-size:12px;cursor:pointer;border:1px solid var(--bdr);background:var(--bg3);color:var(--txt2);transition:all .15s;font-family:inherit;}
+.abtn:hover{color:var(--txt);background:var(--bg2);}
+.abtn.confirm{background:rgba(0,207,171,.1);border-color:rgba(0,207,171,.3);color:var(--accent2);}
+.abtn.confirm:hover{background:rgba(0,207,171,.18);}
+.abtn.edit{background:rgba(124,111,239,.1);border-color:rgba(124,111,239,.3);color:var(--accent);}
+
+/* Edit panel */
+.edit-panel{display:none;background:var(--bg1);border:1px solid rgba(0,207,171,.3);border-radius:12px;padding:14px 16px;margin-top:6px;max-width:520px;border-left:3px solid var(--accent2);}
+.edit-panel.open{display:block;}
+.ep-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.ep-title{font-size:12px;font-weight:600;color:var(--accent2);}
+.ep-x{font-size:12px;color:var(--txt2);cursor:pointer;padding:3px 8px;border-radius:6px;background:var(--bg3);border:1px solid var(--bdr);}
+.ep-x:hover{color:var(--txt);}
+.ep-field{margin-bottom:10px;}
+.ep-lbl{font-size:11px;color:var(--txt2);margin-bottom:4px;}
+.ep-inp{width:100%;padding:8px 11px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg2);color:var(--txt);font-size:13px;font-family:inherit;outline:none;resize:none;}
+.ep-inp:focus{border-color:rgba(124,111,239,.5);}
+.ep-row{display:flex;gap:7px;}
+.ep-actions{display:flex;gap:8px;margin-top:6px;}
+.ep-send{padding:7px 16px;border-radius:8px;background:var(--accent);color:#fff;font-size:12px;cursor:pointer;border:none;font-family:inherit;}
+.ep-send:hover{opacity:.88;}
+.ep-cancel{padding:7px 12px;border-radius:8px;background:var(--bg3);color:var(--txt2);font-size:12px;cursor:pointer;border:1px solid var(--bdr);font-family:inherit;}
+
+/* input bar */
+.ibar{padding:10px 18px;background:var(--bg1);border-top:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.ibar-inp{flex:1;padding:10px 16px;border-radius:24px;border:1px solid var(--bdr);background:var(--bg2);color:var(--txt);font-size:13px;font-family:inherit;outline:none;}
+.ibar-inp:focus{border-color:rgba(124,111,239,.45);}
+.ibar-inp::placeholder{color:var(--txt2);}
+.ibtn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid var(--bdr);background:var(--bg2);color:var(--txt2);flex-shrink:0;transition:all .15s;}
+.ibtn:hover{color:var(--txt);background:var(--bg3);}
+.ibtn.mic{background:rgba(124,111,239,.1);border-color:rgba(124,111,239,.3);color:var(--accent);}
+.ibtn.mic.on{background:rgba(226,75,74,.1);border-color:rgba(226,75,74,.3);color:var(--red);animation:pulse 1s infinite;}
+.isend{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--accent);border:none;color:#fff;flex-shrink:0;}
+.isend:hover{opacity:.88;}
+
+/* mini bar */
+.mini-bar{display:none;padding:8px 18px;background:rgba(124,111,239,.07);border-top:1px solid rgba(124,111,239,.2);align-items:center;gap:8px;flex-shrink:0;}
+.mini-bar.on{display:flex;}
+.mini-lbl{font-size:12px;font-weight:600;color:var(--accent);}
+.mini-inp{flex:1;padding:7px 12px;border-radius:20px;border:1px solid rgba(124,111,239,.25);background:var(--bg2);color:var(--txt);font-size:12px;font-family:inherit;outline:none;}
+
+/* toast */
+.toast{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,207,171,.15);border:1px solid rgba(0,207,171,.4);color:var(--accent2);padding:8px 18px;border-radius:24px;font-size:12px;display:none;z-index:30;white-space:nowrap;pointer-events:none;}
+.toast.on{display:block;animation:fadeup .35s ease;}
+
+/* overlay */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);display:none;z-index:20;}
+.overlay.on{display:block;}
+.ov-panel{position:absolute;top:0;right:0;bottom:0;width:340px;background:var(--bg1);border-left:1px solid var(--bdr);display:flex;flex-direction:column;animation:slideIn .22s ease;}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.ov-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--bdr);}
+.ov-title{font-size:13px;font-weight:600;color:var(--txt);}
+.ov-close{padding:5px 11px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg3);color:var(--txt2);font-size:12px;cursor:pointer;}
+.ov-close:hover{color:var(--txt);}
+.ov-body{flex:1;overflow-y:auto;padding:14px;}
+.ov-body::-webkit-scrollbar{width:4px;}
+.ov-body::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px;}
+.q-item{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--bg2);border-radius:10px;border:1px solid var(--bdr);margin-bottom:8px;cursor:pointer;transition:background .15s;}
+.q-item:hover{background:var(--bg3);}
+.q-item.sel{border-color:rgba(124,111,239,.35);background:rgba(124,111,239,.07);}
+.q-info{flex:1;min-width:0;}
+.q-name{font-size:13px;font-weight:600;color:var(--txt);}
+.q-sub{font-size:11px;color:var(--txt2);margin-top:2px;}
+.hist-card{background:var(--bg2);border-radius:10px;border:1px solid var(--bdr);padding:11px 13px;margin-bottom:8px;}
+.hist-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.hist-dx{font-size:13px;font-weight:600;color:var(--txt);}
+.hist-rx{font-size:11px;color:var(--txt2);}
+.hist-date{font-size:10px;color:var(--txt2);margin-top:4px;}
+
+/* ctx panel */
+.ctx{width:260px;background:var(--bg1);border-left:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:width .25s;}
+.ctx.hide{width:0;}
+.ctx-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.ctx-ttl{font-size:12px;font-weight:600;color:var(--txt);}
+.ctx-body{flex:1;overflow-y:auto;padding:12px 14px;}
+.ctx-body::-webkit-scrollbar{width:3px;}
+.ctx-body::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px;}
+.ctx-sec{margin-bottom:16px;}
+.ctx-sec-lbl{font-size:10px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;}
+.ctx-card{background:var(--bg2);border-radius:10px;padding:10px 12px;border:1px solid var(--bdr);}
+.ctx-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;gap:8px;}
+.ctx-key{font-size:11px;color:var(--txt2);flex-shrink:0;}
+.ctx-val{font-size:12px;color:var(--txt);text-align:right;}
+.sym-tag{display:inline-block;padding:3px 9px;border-radius:20px;background:rgba(226,75,74,.1);border:1px solid rgba(226,75,74,.2);color:#f07575;font-size:11px;margin:2px 2px 0 0;}
+.stt{background:var(--bg2);border-radius:10px;padding:10px;border:1px solid var(--bdr);border-left:2px solid var(--accent2);font-size:12px;color:var(--txt);line-height:1.6;}
+.stt-lbl{font-size:10px;font-weight:600;color:var(--accent2);margin-bottom:5px;}
+.hcard{background:var(--bg2);border-radius:8px;padding:8px 10px;border:1px solid var(--bdr);margin-bottom:6px;font-size:12px;color:var(--txt);line-height:1.5;}
+.hdate{font-size:10px;color:var(--txt2);margin-top:3px;}
+
+/* quick pills */
+.pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}
+.pill{padding:4px 11px;border-radius:20px;border:1px solid var(--bdr);background:var(--bg2);font-size:11px;cursor:pointer;color:var(--txt2);transition:all .15s;font-family:inherit;}
+.pill:hover{color:var(--txt);background:var(--bg3);}
+.pill.g{border-color:rgba(0,207,171,.3);background:rgba(0,207,171,.07);color:var(--accent2);}
+
+/* top tabs */
+.tabs{display:flex;gap:4px;padding:0 18px;background:var(--bg1);border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.tab{padding:9px 14px;font-size:12px;cursor:pointer;color:var(--txt2);border-bottom:2px solid transparent;transition:all .15s;}
+.tab:hover{color:var(--txt);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes fadeup{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sb">
+  <div class="sb-logo" onclick="toggleSb()" title="Toggle sidebar">
+    <div class="sb-dot">A</div>
+    <span class="sb-brand">AegisAI</span>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-item active" onclick="navClick(this)">
+      <div class="sb-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/></svg></div>
+      <span class="sb-label">Dashboard</span>
+    </div>
+    <div class="sb-item" onclick="navClick(this);openQueue()">
+      <div class="sb-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M1 13c0-2.76 2.24-5 5-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 9l4.5 3.5M14.5 9L10 12.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <span class="sb-label">Patient Queue</span>
+    </div>
+    <div class="sb-item" onclick="navClick(this);openHistory()">
+      <div class="sb-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <span class="sb-label">History</span>
+    </div>
+    <div style="flex:1"></div>
+    <div class="sb-item" onclick="navClick(this)">
+      <div class="sb-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14c0-3.31 2.69-6 6-6s6 2.69 6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <span class="sb-label">Profile</span>
+    </div>
+    <div class="sb-item" onclick="navClick(this)">
+      <div class="sb-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <span class="sb-label">Settings</span>
+    </div>
+  </div>
+  <div class="sb-foot" onclick="toggleSb()">
+    <svg id="sb-arr" width="14" height="14" viewBox="0 0 14 14" fill="none" style="transition:transform .25s"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="sb-label" style="font-size:12px;">Collapse</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- topbar -->
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="av">RK</div>
+      <div>
+        <div class="pat-name">Rahul Kulkarni</div>
+        <div class="pat-sub">32 yrs · Male · Reg #A-4821 · Viral Fever</div>
+      </div>
+      <span class="badge badge-warn">In Consultation</span>
+    </div>
+    <div class="tb-right">
+      <button class="tb-btn" onclick="openQueue()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="4.5" cy="4" r="2.5" stroke="currentColor" stroke-width="1.1"/><path d="M1 10c0-1.93 1.57-3.5 3.5-3.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M8 7l3 2.5M11 7l-3 2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+        Queue (4)
+      </button>
+      <button class="tb-btn acc" id="ctx-btn" onclick="toggleCtx()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.1"/><path d="M8 1v10" stroke="currentColor" stroke-width="1.1"/></svg>
+        Context
+      </button>
+      <button class="tb-btn" onclick="openHistory()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.1"/><path d="M6 3.5V6l1.5 1.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+        History
+      </button>
+    </div>
+  </div>
+
+  <!-- tabs -->
+  <div class="tabs">
+    <div class="tab active">AI Chat</div>
+    <div class="tab" onclick="this.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">Vitals</div>
+    <div class="tab" onclick="this.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">Lab Reports</div>
+    <div class="tab" onclick="this.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">Imaging</div>
+  </div>
+
+  <!-- body -->
+  <div class="body">
+
+    <!-- chat -->
+    <div class="chat-wrap">
+
+      <div class="voice-bar" id="vbar">
+        <div class="vdot"></div>
+        <span class="vtxt" id="vtxt">Listening... say a command</span>
+      </div>
+
+      <div class="chat-area" id="chat">
+
+        <!-- AI greeting -->
+        <div class="msg ai">
+          <div class="msg-av ai-av">AI</div>
+          <div>
+            <div class="bubble">Good morning, Dr. Sharma. Rahul Kulkarni (32M) is ready for consultation. Chief complaint: <strong style="color:#e8eaf0">high-grade fever &amp; body ache</strong> for 3 days. Vitals are stable. Shall I run a full analysis?</div>
+            <div class="msg-time">09:04 AM</div>
+          </div>
+        </div>
+
+        <!-- Doctor -->
+        <div class="msg doc">
+          <div class="msg-av dr-av">Dr</div>
+          <div>
+            <div class="bubble">Yes, run the analysis. Check for drug allergies before suggesting medicines.</div>
+            <div class="msg-time">09:05 AM</div>
+          </div>
+        </div>
+
+        <!-- AI card -->
+        <div class="msg ai">
+          <div class="msg-av ai-av">AI</div>
+          <div>
+            <div class="bubble">Analysis complete. No known drug allergies on record. Here is my assessment:</div>
+            <div class="ai-card" id="aic">
+              <div class="aic-head">
+                <span class="aic-title">AI Medical Analysis</span>
+                <span class="aic-conf">Confidence 94%</span>
+              </div>
+              <div class="aic-sec">
+                <div class="aic-label">Diagnosis</div>
+                <div class="aic-val">Viral Fever — likely Influenza A. Symptoms consistent with a 3-day viral course. No signs of bacterial secondary infection detected.</div>
+              </div>
+              <div class="aic-sec">
+                <div class="aic-label">Suggested Prescription</div>
+                <div class="med-row"><div class="med-dot"></div><span class="med-name">Paracetamol 500mg</span><span class="med-dose">· 1 tab · TDS · 5 days</span></div>
+                <div class="med-row"><div class="med-dot"></div><span class="med-name">Cetirizine 10mg</span><span class="med-dose">· 1 tab · OD at night · 3 days</span></div>
+                <div class="med-row"><div class="med-dot"></div><span class="med-name">Electrolyte ORS</span><span class="med-dose">· 2 sachets/day · 5 days</span></div>
+              </div>
+              <div class="aic-sec">
+                <div class="aic-label">Advice</div>
+                <div class="aic-val" style="font-size:12px;color:#8a95a8">Rest, adequate hydration, avoid cold exposure. Follow-up if fever persists beyond 5 days or worsens.</div>
+              </div>
+              <div class="aic-actions">
+                <button class="abtn edit" onclick="openEdit()">Edit prescription</button>
+                <button class="abtn confirm" onclick="sendRx()">Confirm &amp; Send to Patient</button>
+                <button class="abtn" onclick="regen()">Regenerate</button>
+              </div>
+            </div>
+            <!-- Edit panel -->
+            <div class="edit-panel" id="ep">
+              <div class="ep-head">
+                <span class="ep-title">Editing prescription</span>
+                <button class="ep-x" onclick="closeEdit()">Close</button>
+              </div>
+              <div class="ep-field">
+                <div class="ep-lbl">Diagnosis</div>
+                <input class="ep-inp" value="Viral Fever — Influenza A"/>
+              </div>
+              <div class="ep-field">
+                <div class="ep-lbl">Medicine 1</div>
+                <div class="ep-row">
+                  <input class="ep-inp" value="Paracetamol 500mg" style="flex:1.5"/>
+                  <input class="ep-inp" value="1 tab · TDS · 5 days" style="flex:1"/>
+                </div>
+              </div>
+              <div class="ep-field">
+                <div class="ep-lbl">Medicine 2</div>
+                <div class="ep-row">
+                  <input class="ep-inp" value="Cetirizine 10mg" style="flex:1.5"/>
+                  <input class="ep-inp" value="1 tab · OD night · 3 days" style="flex:1"/>
+                </div>
+              </div>
+              <div class="ep-field">
+                <div class="ep-lbl">Medicine 3</div>
+                <div class="ep-row">
+                  <input class="ep-inp" value="Electrolyte ORS" style="flex:1.5"/>
+                  <input class="ep-inp" value="2 sachets/day · 5 days" style="flex:1"/>
+                </div>
+              </div>
+              <div class="ep-field">
+                <div class="ep-lbl">Advice / Notes</div>
+                <textarea class="ep-inp" rows="2">Rest, hydration, avoid cold. Follow-up if fever persists beyond 5 days.</textarea>
+              </div>
+              <div class="ep-actions">
+                <button class="ep-send" onclick="sendRx()">Confirm &amp; Send</button>
+                <button class="ep-cancel" onclick="closeEdit()">Discard</button>
+              </div>
+            </div>
+            <div class="msg-time">09:06 AM</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Input bar -->
+      <div class="ibar" id="ibar">
+        <button class="ibtn mic" id="mic" onclick="toggleMic()" title="Voice input">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="1" width="6" height="8" rx="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 7a6 6 0 0010 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M7 12v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+        <input class="ibar-inp" id="inp" placeholder='Ask AI or type a command… try "open queue"' onkeydown="kd(event)"/>
+        <button class="ibtn" title="Attach file">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M10.8 6.5L6 11.3a3.3 3.3 0 01-4.67-4.67l4.67-4.67a1.88 1.88 0 012.66 2.66L4 9.28a.44.44 0 01-.62-.62L8 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="isend" onclick="send()" title="Send">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 12L12 6.5 1 1v4.5l7.5 1L1 7.5z" fill="white"/></svg>
+        </button>
+      </div>
+
+      <!-- mini bar -->
+      <div class="mini-bar" id="mbar">
+        <span class="mini-lbl">AI</span>
+        <input class="mini-inp" placeholder="Ask AI while panel is open…" onkeydown="kd(event)"/>
+        <button class="isend" style="width:28px;height:28px" onclick="closeOv()">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8l6-6M2 2l6 6" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <div class="toast" id="toast">Prescription sent to Rahul Kulkarni</div>
+
+      <!-- Overlay -->
+      <div class="overlay" id="ov" onclick="ovBg(event)">
+        <div class="ov-panel" onclick="event.stopPropagation()">
+          <div class="ov-head">
+            <span class="ov-title" id="ov-ttl">Panel</span>
+            <button class="ov-close" onclick="closeOv()">Close</button>
+          </div>
+          <div class="ov-body" id="ov-body"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Context panel -->
+    <div class="ctx" id="ctx">
+      <div class="ctx-head">
+        <span class="ctx-ttl">Patient context</span>
+        <span style="font-size:11px;color:#8a95a8;cursor:pointer" onclick="toggleCtx()">hide</span>
+      </div>
+      <div class="ctx-body">
+        <div class="ctx-sec">
+          <div class="ctx-sec-lbl">Patient info</div>
+          <div class="ctx-card">
+            <div class="ctx-row"><span class="ctx-key">Name</span><span class="ctx-val">Rahul Kulkarni</span></div>
+            <div class="ctx-row"><span class="ctx-key">Age / Sex</span><span class="ctx-val">32 M</span></div>
+            <div class="ctx-row"><span class="ctx-key">BP</span><span class="ctx-val">118 / 78</span></div>
+            <div class="ctx-row"><span class="ctx-key">Temp</span><span class="ctx-val">101.4°F</span></div>
+            <div class="ctx-row"><span class="ctx-key">SpO₂</span><span class="ctx-val">98%</span></div>
+            <div class="ctx-row"><span class="ctx-key">Pulse</span><span class="ctx-val">88 bpm</span></div>
+          </div>
+        </div>
+        <div class="ctx-sec">
+          <div class="ctx-sec-lbl">Symptoms</div>
+          <span class="sym-tag">Fever</span>
+          <span class="sym-tag">Body ache</span>
+          <span class="sym-tag">Fatigue</span>
+          <span class="sym-tag">Headache</span>
+        </div>
+        <div class="ctx-sec">
+          <div class="ctx-sec-lbl">Live transcript</div>
+          <div class="stt">
+            <div class="stt-lbl">Speech-to-text</div>
+            "Patient reports high-grade fever since 3 days, severe body ache and fatigue. No cough or cold symptoms. Appetite reduced significantly."
+          </div>
+        </div>
+        <div class="ctx-sec">
+          <div class="ctx-sec-lbl">Past history</div>
+          <div class="hcard">Hypertension — controlled<div class="hdate">Diagnosed Jan 2022</div></div>
+          <div class="hcard">Viral fever episode<div class="hdate">Oct 2024 · Similar presentation</div></div>
+          <div class="hcard">Allergies: None known<div class="hdate">Verified Mar 2025</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- quick pills outside shell -->
+<div style="padding:10px 16px;background:#0f1117;border-top:1px solid #1e2535;display:flex;flex-wrap:wrap;align-items:center;gap:7px;">
+  <span style="font-size:11px;color:#8a95a8">Try:</span>
+  <button class="pill" onclick="qcmd('open queue')">open queue</button>
+  <button class="pill" onclick="qcmd('show history')">show history</button>
+  <button class="pill" onclick="qcmd('add azithromycin')">add azithromycin</button>
+  <button class="pill" onclick="qcmd('cetirizine side effects')">side effects</button>
+  <button class="pill" onclick="qcmd('scroll down')">scroll down</button>
+  <button class="pill" onclick="openEdit()">edit rx</button>
+  <button class="pill g" onclick="sendRx()">send to patient</button>
+</div>
+
+<script>
+var sbExp=false,ctxOpen=true,micOn=false,editOn=false,ovMode='';
+
+function toggleSb(){
+  sbExp=!sbExp;
+  document.getElementById('sb').classList.toggle('exp',sbExp);
+  document.getElementById('sb-arr').style.transform=sbExp?'rotate(180deg)':'';
+}
+
+function navClick(el){
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleCtx(){
+  ctxOpen=!ctxOpen;
+  document.getElementById('ctx').classList.toggle('hide',!ctxOpen);
+}
+
+function openEdit(){
+  editOn=true;
+  var ep=document.getElementById('ep');
+  ep.classList.add('open');
+  ep.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeEdit(){
+  editOn=false;
+  document.getElementById('ep').classList.remove('open');
+}
+
+function sendRx(){
+  closeEdit();
+  var t=document.getElementById('toast');
+  t.classList.add('on');
+  setTimeout(function(){t.classList.remove('on');},3200);
+  addMsg('doc','Prescription confirmed. Sending to patient now.');
+  setTimeout(function(){
+    addMsg('ai','Prescription sent to Rahul Kulkarni via the patient app. A copy has been saved to medical records.');
+  },900);
+}
+
+function regen(){
+  addMsg('doc','Please regenerate the analysis.');
+  setTimeout(function(){
+    addMsg('ai','Re-analysing... The diagnosis stands: Viral Fever — Influenza A. Confidence updated to 96% after cross-referencing regional flu data.');
+  },700);
+}
+
+function openQueue(){
+  ovMode='queue';
+  document.getElementById('ov-ttl').textContent='Patient Queue';
+  document.getElementById('ov-body').innerHTML=
+    '<div style="font-size:11px;color:#8a95a8;margin-bottom:10px;">4 patients · Avg wait 18 min</div>'+
+    qItem('RK','Rahul Kulkarni','Fever · In consultation','badge-warn','Active','sel','')+
+    qItem('PM','Priya Mehta','Hypertension follow-up · 28F','badge-ok','Waiting','','teal')+
+    qItem('AJ','Amit Joshi','Chest pain · 55M · Urgent','badge-urg','Urgent','','red')+
+    qItem('SR','Sunita Rao','Diabetes checkup · 48F','badge-ok','Waiting','','');
+  showOv();
+}
+
+function qItem(init,name,sub,bdg,lbl,sel,avClass){
+  return '<div class="q-item '+sel+'" onclick="pickPat(\''+name+'\')">'+
+    '<div class="av '+(avClass||'')+'">'+init+'</div>'+
+    '<div class="q-info"><div class="q-name">'+name+'</div><div class="q-sub">'+sub+'</div></div>'+
+    '<span class="badge '+bdg+'">'+lbl+'</span></div>';
+}
+
+function pickPat(name){
+  closeOv();
+  addMsg('ai','Switching to '+name+'. Profile loaded. Shall I begin the analysis?');
+}
+
+function openHistory(){
+  ovMode='history';
+  document.getElementById('ov-ttl').textContent='Consultation History — Rahul Kulkarni';
+  var rows=[
+    ['Oct 2024','Viral Fever','Paracetamol, Cetirizine','Resolved'],
+    ['Mar 2024','BP Follow-up','Amlodipine 5mg','Stable'],
+    ['Nov 2023','Gastroenteritis','ORS, Metronidazole','Resolved'],
+    ['Jun 2023','Routine Checkup','—','Normal'],
+    ['Jan 2022','Hypertension Diagnosed','Amlodipine 2.5mg','Ongoing'],
+  ];
+  var html='<div style="font-size:11px;color:#8a95a8;margin-bottom:10px;">Last 5 visits</div>';
+  rows.forEach(function(r){
+    html+='<div class="hist-card">'+
+      '<div class="hist-top"><span class="hist-dx">'+r[1]+'</span><span class="badge '+(r[3]==='Resolved'||r[3]==='Normal'?'badge-ok':r[3]==='Stable'?'badge-ok':'badge-warn')+'">'+r[3]+'</span></div>'+
+      '<div class="hist-rx">'+r[2]+'</div>'+
+      '<div class="hist-date">'+r[0]+'</div></div>';
+  });
+  document.getElementById('ov-body').innerHTML=html;
+  showOv();
+}
+
+function showOv(){
+  document.getElementById('ov').classList.add('on');
+  document.getElementById('ibar').style.display='none';
+  document.getElementById('mbar').classList.add('on');
+}
+function closeOv(){
+  document.getElementById('ov').classList.remove('on');
+  document.getElementById('ibar').style.display='flex';
+  document.getElementById('mbar').classList.remove('on');
+  ovMode='';
+}
+function ovBg(e){
+  if(e.target===document.getElementById('ov')) closeOv();
+}
+
+function toggleMic(){
+  micOn=!micOn;
+  document.getElementById('mic').classList.toggle('on',micOn);
+  document.getElementById('vbar').classList.toggle('on',micOn);
+  if(micOn){
+    var msgs=['Listening... say a command','Speak now...','Voice active — I\'m ready'];
+    var i=0;
+    var t=setInterval(function(){
+      if(!micOn){clearInterval(t);return;}
+      document.getElementById('vtxt').textContent=msgs[i%msgs.length];i++;
+    },2000);
+  }
+}
+
+function kd(e){ if(e.key==='Enter') send(); }
+
+function send(){
+  var el=document.getElementById('inp');
+  var v=el.value.trim();
+  if(!v){ el=document.querySelector('.mini-inp');v=el.value.trim();}
+  if(!v) return;
+  el.value='';
+  processCmd(v);
+}
+
+function qcmd(cmd){
+  document.getElementById('inp').value=cmd;
+  setTimeout(send,80);
+}
+
+function processCmd(cmd){
+  var lo=cmd.toLowerCase();
+  addMsg('doc',cmd);
+  if(lo.includes('open queue')||lo.includes('show queue')){setTimeout(openQueue,400);return;}
+  if(lo.includes('history')){setTimeout(openHistory,400);return;}
+  if(lo.includes('scroll down')){scrollOvBody(220,'Scrolling down...');return;}
+  if(lo.includes('scroll up')){scrollOvBody(-220,'Scrolling up...');return;}
+  if(lo.includes('go to top')){scrollOvBody(-9999,'Going to top...');return;}
+  if(lo.includes('go to bottom')){scrollOvBody(9999,'Going to bottom...');return;}
+  if(lo.includes('edit')||lo.includes('modify')){
+    setTimeout(function(){openEdit();addMsg('ai','Prescription editor opened. Make your changes and confirm when ready.');},300);return;
+  }
+  if(lo.includes('confirm')||lo.includes('send')){setTimeout(sendRx,300);return;}
+  if(lo.includes('azithromycin')){
+    setTimeout(function(){addMsg('ai','Azithromycin 500mg — 1 tab OD × 5 days added. Suitable if secondary bacterial infection is suspected. Shall I update the prescription card?');},600);return;
+  }
+  if(lo.includes('side effect')){
+    setTimeout(function(){addMsg('ai','Cetirizine side effects: Drowsiness (common), dry mouth, headache. Rare: palpitations. No contraindications for this patient.');},600);return;
+  }
+  setTimeout(function(){addMsg('ai','Noted: "'+cmd+'". Added to consultation log. Is there anything else you need?');},500);
+}
+
+function scrollOvBody(d,msg){
+  var b=document.getElementById('ov-body');
+  if(ovMode){
+    b.scrollBy({top:d,behavior:'smooth'});
+    addMsg('ai',msg);
+  } else {
+    addMsg('ai','No panel is open. Try "open queue" or "show history" first.');
+  }
+}
+
+function addMsg(role,text){
+  var a=document.getElementById('chat');
+  var isAI=role==='ai';
+  var now=new Date();
+  var t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  var d=document.createElement('div');
+  d.className='msg '+(role==='doc'?'doc':'ai');
+  d.innerHTML='<div class="msg-av '+(isAI?'ai-av':'dr-av')+'">'+(isAI?'AI':'Dr')+'</div>'+
+    '<div><div class="bubble">'+text+'</div>'+
+    '<div class="msg-time" style="'+(role==='doc'?'text-align:right':'')+'">'+t+'</div></div>';
+  a.appendChild(d);
+  a.scrollTop=a.scrollHeight;
+}
+</script>
+</body>
+</html>
